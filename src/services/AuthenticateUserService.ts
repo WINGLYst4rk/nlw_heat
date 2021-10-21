@@ -1,6 +1,6 @@
 import axios from 'axios';
 import prismaClient from '../prisma';
-import {  } from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 /**
  * Objetivo: receber codigo para autenticar usuário e registrar no banco de dados
  *
@@ -69,7 +69,22 @@ class AuthenticateUserService {
 			});
 		}
 
-		return response.data;
+		const token = sign(
+			{
+				user: {
+					name: user.name,
+					avatar_url: user.avatar_url,
+					id: user.id,
+				},
+			},
+			process.env.JWT_SECRET,
+			{
+				subject: user.id,
+				expiresIn: '1d',
+			}
+		);
+
+		return { token, user };
 	}
 }
 
