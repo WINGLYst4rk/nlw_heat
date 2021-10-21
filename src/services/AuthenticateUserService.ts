@@ -1,4 +1,6 @@
 import axios from 'axios';
+import prismaClient from '../prisma';
+import {  } from 'jsonwebtoken';
 /**
  * Objetivo: receber codigo para autenticar usuário e registrar no banco de dados
  *
@@ -17,7 +19,7 @@ interface IAccessTokenResponse {
 }
 
 interface IUserResponse {
-	avatarUrl: string;
+	avatar_url: string;
 	login: string;
 	id: number;
 	name: string;
@@ -47,6 +49,25 @@ class AuthenticateUserService {
 				},
 			}
 		);
+
+		const { login, id, avatar_url, name } = response.data;
+
+		const user = await prismaClient.user.findFirst({
+			where: {
+				github_id: id,
+			},
+		});
+
+		if (!user) {
+			await prismaClient.user.create({
+				data: {
+					github_id: id,
+					login,
+					avatar_url,
+					name,
+				},
+			});
+		}
 
 		return response.data;
 	}
